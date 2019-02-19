@@ -75,7 +75,11 @@ class Calendar extends Component {
     // Handler which gets executed when press arrow icon left. It receive a callback can go back month
     onPressArrowLeft: PropTypes.func,
     // Handler which gets executed when press arrow icon left. It receive a callback can go next month
-    onPressArrowRight: PropTypes.func
+    onPressArrowRight: PropTypes.func,
+
+    // DD
+    renderCalendarHeader: PropTypes.func,
+    renderCalendarFooter: PropTypes.func,
   };
 
   constructor(props) {
@@ -252,24 +256,34 @@ class Calendar extends Component {
         indicator = true;
       }
     }
+
+    const headerProps = {
+      theme:this.props.theme,
+      hideArrows:this.props.hideArrows,
+      month:this.state.currentMonth,
+      addMonth:this.addMonth,
+      showIndicator:indicator,
+      firstDay:this.props.firstDay,
+      renderArrow:this.props.renderArrow,
+      monthFormat:this.props.monthFormat,
+      hideDayNames:this.props.hideDayNames,
+      weekNumbers:this.props.showWeekNumbers,
+      onPressArrowLeft:this.props.onPressArrowLeft,
+      onPressArrowRight:this.props.onPressArrowRight
+    }
+    const header = this.props.renderCalendarHeader ? (
+      this.props.renderCalendarHeader(headerProps)
+    ) : (
+      <CalendarHeader {...headerProps} />
+    );
+
     return (
       <View style={[this.style.container, this.props.style]}>
-        <CalendarHeader
-          theme={this.props.theme}
-          hideArrows={this.props.hideArrows}
-          month={this.state.currentMonth}
-          addMonth={this.addMonth}
-          showIndicator={indicator}
-          firstDay={this.props.firstDay}
-          renderArrow={this.props.renderArrow}
-          monthFormat={this.props.monthFormat}
-          hideDayNames={this.props.hideDayNames}
-          weekNumbers={this.props.showWeekNumbers}
-          onPressArrowLeft={this.props.onPressArrowLeft}
-          onPressArrowRight={this.props.onPressArrowRight}
-        />
+        {header}
         <View style={this.style.monthView}>{weeks}</View>
-      </View>);
+        {this.props.renderCalendarFooter && this.props.renderCalendarFooter(this.state.currentMonth)}
+      </View>
+    );
   }
 }
 

@@ -89,6 +89,11 @@ export default class AgendaView extends Component {
     refreshing: PropTypes.bool,
     // Display loading indicador. Default = false
     displayLoadingIndicator: PropTypes.bool,
+
+    // DD:
+    expandOnStart: PropTypes.bool,
+    renderCalendarHeader: PropTypes.func,
+    renderCalendarFooter: PropTypes.func,
   };
 
   constructor(props) {
@@ -102,7 +107,7 @@ export default class AgendaView extends Component {
     this.state = {
       scrollY: new Animated.Value(0),
       calendarIsReady: false,
-      calendarScrollable: false,
+      calendarScrollable: !!props.expandOnStart,
       firstResevationLoad: false,
       selectedDay: parseDate(this.props.selected) || XDate(true),
       topDay: parseDate(this.props.selected) || XDate(true),
@@ -135,7 +140,9 @@ export default class AgendaView extends Component {
     // When user touches knob, the actual component that receives touch events is a ScrollView.
     // It needs to be scrolled to the bottom, so that when user moves finger downwards,
     // scroll position actually changes (it would stay at 0, when scrolled to the top).
-    this.setScrollPadPosition(this.initialScrollPadPosition(), false);
+    if (!this.state.calendarScrollable) {
+      this.setScrollPadPosition(this.initialScrollPadPosition(), false);
+    }
     // delay rendering calendar in full height because otherwise it still flickers sometimes
     setTimeout(() => this.setState({calendarIsReady: true}), 0);
   }
@@ -356,7 +363,7 @@ export default class AgendaView extends Component {
 
     if (!this.state.calendarIsReady) {
       // limit header height until everything is setup for calendar dragging
-      headerStyle.push({height: 0});
+      headerStyle.push({height: this.state.calendarScrollable ? -HEADER_HEIGHT : 0});
       // fill header with appStyle.calendarBackground background to reduce flickering
       weekdaysStyle.push({height: HEADER_HEIGHT});
     }
@@ -415,6 +422,8 @@ export default class AgendaView extends Component {
               disabledByDefault={this.props.disabledByDefault}
               displayLoadingIndicator={this.props.displayLoadingIndicator}
               showWeekNumbers={this.props.showWeekNumbers}
+              renderCalendarHeader={this.props.renderCalendarHeader}
+              renderCalendarFooter={this.props.renderCalendarFooter}
             />
           </Animated.View>
           {knob}
@@ -430,7 +439,7 @@ export default class AgendaView extends Component {
           overScrollMode='never'
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
-          style={scrollPadStyle}
+          style={[scrollPadStyle, this.styles.scrollPadStyle]}
           scrollEventThrottle={1}
           scrollsToTop={false}
           onTouchStart={this.onTouchStart}
